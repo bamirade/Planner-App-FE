@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Category, getCategories, createCategory } from "../../api/category";
+import {
+  Category,
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../../api/category";
 import CreateCategory from "./CreateCategory";
+import EditCategory from "./EditCategory";
 
 interface CategoryListProps {
   onBack: () => void;
@@ -9,6 +16,8 @@ interface CategoryListProps {
 const CategoryList: React.FC<CategoryListProps> = ({ onBack }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showNewCategory, setShowNewCategory] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -35,6 +44,38 @@ const CategoryList: React.FC<CategoryListProps> = ({ onBack }) => {
     fetchCategories();
   };
 
+  const handleDeleteCategory = async (categoryId: number) => {
+    try {
+      await deleteCategory(categoryId);
+      fetchCategories();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    }
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateCategory = async (
+    categoryId: number,
+    updatedData: Partial<Category>
+  ) => {
+    try {
+      await updateCategory(categoryId, updatedData);
+      setShowEditModal(false);
+      fetchCategories();
+    } catch (error) {
+      console.error("Error updating category:", error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+    setEditingCategory(null);
+  };
+
   return (
     <div>
       {!showNewCategory && (
@@ -45,7 +86,15 @@ const CategoryList: React.FC<CategoryListProps> = ({ onBack }) => {
           ) : (
             <ul>
               {categories.map((category) => (
-                <li key={category.id}>{category.name}</li>
+                <li key={category.id}>
+                  {category.name}
+                  <button onClick={() => handleDeleteCategory(category.id)}>
+                    Delete
+                  </button>
+                  <button onClick={() => handleEditCategory(category)}>
+                    Edit
+                  </button>
+                </li>
               ))}
             </ul>
           )}
@@ -55,8 +104,18 @@ const CategoryList: React.FC<CategoryListProps> = ({ onBack }) => {
       )}
       {showNewCategory && (
         <>
-          <CreateCategory onBack={handleBack} onCategoryCreated={handleCategoryCreated} />
+          <CreateCategory
+            onBack={handleBack}
+            onCategoryCreated={handleCategoryCreated}
+          />
         </>
+      )}
+      {showEditModal && editingCategory && (
+        <EditCategory
+          category={editingCategory}
+          onUpdateCategory={handleUpdateCategory}
+          onCancel={handleCancelEdit}
+        />
       )}
     </div>
   );
