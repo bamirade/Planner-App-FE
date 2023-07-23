@@ -13,6 +13,7 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [dueTime, setDueTime] = useState("");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -50,7 +51,7 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
     const taskData: Partial<Task> = {
       name,
       description,
-      due_date: dueDate,
+      due_date: `${dueDate}T${dueTime}:00`,
       category_id: categoryId,
     };
 
@@ -61,6 +62,7 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
     setDescription("");
     setDueDate("");
     setCategory("");
+    onBack();
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +78,13 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
     setCategory("");
   };
 
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputTime = e.target.value;
+    const [hours, minutes] = inputTime.split(":");
+    const formattedHours = hours.length === 1 ? `0${hours}` : hours;
+    const formattedMinutes = minutes.length === 1 ? `0${minutes}` : minutes;
+    setDueTime(`${formattedHours}:${formattedMinutes}`);
+  };
   return (
     <div>
       <h2>Create Task</h2>
@@ -101,6 +110,10 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
         />
+      </div>
+      <div>
+        <label>Due Time:</label>
+        <input type="time" value={dueTime} onChange={handleTimeChange} />
       </div>
       <div>
         <label>Category:</label>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -19,6 +19,8 @@ const Homepage: React.FC = () => {
   const [showCategoryList, setShowCategoryList] = useState(false);
   const [showTasksList, setShowTasksList] = useState(false);
   const [showNewTask, setShowNewTask] = useState(false);
+  const [currentDate, setCurrentDate] = useState<string>("");
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   const handleShowCategoryList = () => {
     setShowCategoryList(true);
@@ -44,10 +46,27 @@ const Homepage: React.FC = () => {
     setShowNewTask(false);
   };
 
+  const updateDateTime = () => {
+    const currentDateObj = new Date();
+    setCurrentDate(currentDateObj.toLocaleDateString());
+    setCurrentTime(currentDateObj.toLocaleTimeString());
+  };
+
+  useEffect(() => {
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <AppBar position="static">
         <Toolbar>
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Typography variant="subtitle1">{currentDate}</Typography>
+            <Typography variant="subtitle2">{currentTime}</Typography>
+          </Box>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Your Journal/Planner App
           </Typography>
@@ -57,7 +76,9 @@ const Homepage: React.FC = () => {
         {!showCategoryList && !showTasksList && !showNewTask && (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography variant="h4">Welcome to Your Journal/Planner App</Typography>
+              <Typography variant="h4">
+                Welcome to Your Journal/Planner App
+              </Typography>
             </Grid>
             <Grid item xs={12}>
               <TodayTaskList />
@@ -67,7 +88,11 @@ const Homepage: React.FC = () => {
                 <Button variant="outlined" onClick={handleShowCategoryList}>
                   View Categories
                 </Button>
-                <Button variant="outlined" onClick={handleShowTasksList} sx={{ ml: 1 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleShowTasksList}
+                  sx={{ ml: 1 }}
+                >
                   View Tasks
                 </Button>
                 <Button
@@ -89,7 +114,10 @@ const Homepage: React.FC = () => {
         )}
         {showTasksList && (
           <Paper sx={{ p: 2, mt: 2 }}>
-            <TasksList onBack={handleBack} handleShowNewTask={handleShowNewTask} />
+            <TasksList
+              onBack={handleBack}
+              handleShowNewTask={handleShowNewTask}
+            />
           </Paper>
         )}
         {showNewTask && (
