@@ -4,9 +4,31 @@ import Homepage from './Dashboard/Homepage'
 import { CssBaseline, ThemeProvider, Tooltip, Fab, PaletteMode, } from "@mui/material";
 import theme from './utils/theme';
 import { Brightness4 as Brightness4Icon, Brightness7 as Brightness7Icon } from "@mui/icons-material";
+import Login from "./Auth/Login";
 
 function App() {
   const [mode, setMode] = useState<PaletteMode>("light");
+  const [loggedInUser, setLoggedInUser] = useState(
+    JSON.parse(localStorage.getItem("loggedInUser"))
+  );
+
+  const handleLogin = (username, password) => {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const matchedUser = users.find(
+      (user) => user.username === username && user.password === password
+    );
+    if (matchedUser) {
+      setLoggedInUser(matchedUser);
+      localStorage.setItem("loggedInUser", JSON.stringify(matchedUser));
+    } else {
+      alert("Invalid username or password");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("loggedInUser");
+    setLoggedInUser(null);
+  };
 
   const handleModeChange = () => {
     setMode((prevMode: string) => (prevMode === "light" ? "dark" : "light"));
@@ -15,7 +37,11 @@ function App() {
   return (
     <ThemeProvider theme={theme(mode)}>
       <CssBaseline />
-      <Homepage />
+      {loggedInUser ? (
+          <Homepage handleLogout={handleLogout} />
+        ) : (
+          <Login handleLogin={handleLogin} />
+        )}
       <Tooltip title={`Switch to ${mode === "light" ? "Dark" : "Light"} Mode`} placement="left">
         <Fab
           color={mode === "light" ? "primary" : "secondary"}

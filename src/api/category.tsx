@@ -1,7 +1,11 @@
 import axios, { AxiosError } from 'axios';
-import key from './key'
+import key from './key';
 
 const API_URL = key.API_URL;
+
+const getToken = () => {
+  return localStorage.getItem('token') as string;
+};
 
 export interface Category {
   id: number;
@@ -17,7 +21,9 @@ export interface ErrorResponse {
 
 export const getCategories = async (): Promise<Category[]> => {
   try {
-    const response = await axios.get<Category[]>(`${API_URL}/categories`);
+    const response = await axios.get<Category[]>(`${API_URL}/categories`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -27,7 +33,9 @@ export const getCategories = async (): Promise<Category[]> => {
 
 export const getCategory = async (categoryId: number): Promise<Category> => {
   try {
-    const response = await axios.get<Category>(`${API_URL}/categories/${categoryId}`);
+    const response = await axios.get<Category>(`${API_URL}/categories/${categoryId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -37,7 +45,9 @@ export const getCategory = async (categoryId: number): Promise<Category> => {
 
 export const createCategory = async (categoryData: Partial<Category>): Promise<Category> => {
   try {
-    const response = await axios.post<Category>(`${API_URL}/categories`, categoryData);
+    const response = await axios.post<Category>(`${API_URL}/categories`, categoryData, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -47,7 +57,9 @@ export const createCategory = async (categoryData: Partial<Category>): Promise<C
 
 export const updateCategory = async (categoryId: number, categoryData: Partial<Category>): Promise<Category> => {
   try {
-    const response = await axios.patch<Category>(`${API_URL}/categories/${categoryId}`, categoryData);
+    const response = await axios.patch<Category>(`${API_URL}/categories/${categoryId}`, categoryData, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -57,7 +69,9 @@ export const updateCategory = async (categoryId: number, categoryData: Partial<C
 
 export const deleteCategory = async (categoryId: number): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/categories/${categoryId}`);
+    await axios.delete(`${API_URL}/categories/${categoryId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
   } catch (error) {
     handleApiError(error);
   }

@@ -9,6 +9,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Box,
+  Tooltip,
 } from "@mui/material";
 import {
   Task,
@@ -16,12 +18,13 @@ import {
   markTaskAsCompleted,
   updateTask,
 } from "../../api/task";
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import WarningIcon from "@mui/icons-material/Warning";
-import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import {
+  CheckCircle as CheckCircleIcon,
+  Clear as ClearIcon,
+  Warning as WarningIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon,
+} from "@mui/icons-material";
 
 const TodayTaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -75,7 +78,6 @@ const TodayTaskList: React.FC = () => {
         task.id === updatedTask.id ? updatedTask : task
       );
       setTasks(updatedTasks);
-      console.log(updatedTasks);
     } catch (error) {
       console.error("Error marking task as completed:", error);
     }
@@ -125,7 +127,7 @@ const TodayTaskList: React.FC = () => {
         expanded={expandedSection === "current"}
         onChange={() => handleChangeSection("current")}
       >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
           Current
         </AccordionSummary>
         <AccordionDetails>
@@ -143,33 +145,49 @@ const TodayTaskList: React.FC = () => {
                     <ListItemText
                       primary={task.name}
                       secondary={renderTaskTime(task.due_date)}
+                      primaryTypographyProps={{
+                        style: {
+                          color: task.is_completed ? "green" : "inherit",
+                          textDecoration: task.is_completed
+                            ? "line-through"
+                            : "none",
+                        },
+                      }}
                     />
                     <ListItemSecondaryAction>
                       {task.is_completed ? (
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleUndoTask(task.id)}
-                        >
-                          <ClearIcon />
-                        </IconButton>
+                        <Tooltip title="Undo" placement="top">
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleUndoTask(task.id)}
+                            size="small"
+                          >
+                            <ClearIcon />
+                          </IconButton>
+                        </Tooltip>
                       ) : (
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleCompleteTask(task.id)}
-                        >
-                          <CheckIcon />
-                        </IconButton>
+                        <Tooltip title="Mark as Completed" placement="top">
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleCompleteTask(task.id)}
+                            size="small"
+                          >
+                            <CheckCircleIcon />
+                          </IconButton>
+                        </Tooltip>
                       )}
                     </ListItemSecondaryAction>
                   </ListItem>
                 ))}
             </List>
           )}
+
           {currentTasks.length > tasksPerPage && (
-            <div>
+            <Box mt={2}>
               <IconButton
                 onClick={() => setCurrentTasksPage(currentTasksPage - 1)}
                 disabled={currentTasksPage === 1}
+                size="small"
               >
                 <NavigateBeforeIcon />
               </IconButton>
@@ -178,18 +196,20 @@ const TodayTaskList: React.FC = () => {
                 disabled={
                   currentTasksPage * tasksPerPage >= currentTasks.length
                 }
+                size="small"
               >
                 <NavigateNextIcon />
               </IconButton>
-            </div>
+            </Box>
           )}
         </AccordionDetails>
       </Accordion>
+
       <Accordion
         expanded={expandedSection === "incomplete"}
         onChange={() => handleChangeSection("incomplete")}
       >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
           Passed Due date
         </AccordionSummary>
         <AccordionDetails>
@@ -221,46 +241,49 @@ const TodayTaskList: React.FC = () => {
                       </Typography>
                       <ListItemSecondaryAction>
                         {task.is_completed ? (
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleUndoTask(task.id)}
-                          >
-                            <ClearIcon />
-                          </IconButton>
+                          <Tooltip title="Undo" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleUndoTask(task.id)}
+                              size="small"
+                            >
+                              <ClearIcon />
+                            </IconButton>
+                          </Tooltip>
                         ) : (
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleCompleteTask(task.id)}
-                          >
-                            <CheckIcon />
-                          </IconButton>
+                          <Tooltip title="Mark as Completed" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleCompleteTask(task.id)}
+                              size="small"
+                            >
+                              <CheckCircleIcon />
+                            </IconButton>
+                          </Tooltip>
                         )}
                       </ListItemSecondaryAction>
                     </ListItem>
                   ))}
               </List>
               {incompleteTasks.length > tasksPerPage && (
-                <div>
+                <Box mt={2}>
                   <IconButton
-                    onClick={() =>
-                      setIncompleteTasksPage(incompleteTasksPage - 1)
-                    }
+                    onClick={() => setIncompleteTasksPage(incompleteTasksPage - 1)}
                     disabled={incompleteTasksPage === 1}
+                    size="small"
                   >
                     <NavigateBeforeIcon />
                   </IconButton>
                   <IconButton
-                    onClick={() =>
-                      setIncompleteTasksPage(incompleteTasksPage + 1)
-                    }
+                    onClick={() => setIncompleteTasksPage(incompleteTasksPage + 1)}
                     disabled={
-                      incompleteTasksPage * tasksPerPage >=
-                      incompleteTasks.length
+                      incompleteTasksPage * tasksPerPage >= incompleteTasks.length
                     }
+                    size="small"
                   >
                     <NavigateNextIcon />
                   </IconButton>
-                </div>
+                </Box>
               )}
             </>
           )}
@@ -271,7 +294,7 @@ const TodayTaskList: React.FC = () => {
         expanded={expandedSection === "complete"}
         onChange={() => handleChangeSection("complete")}
       >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
           Complete
         </AccordionSummary>
         <AccordionDetails>
@@ -301,45 +324,49 @@ const TodayTaskList: React.FC = () => {
                       />
                       <ListItemSecondaryAction>
                         {task.is_completed ? (
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleUndoTask(task.id)}
-                          >
-                            <ClearIcon />
-                          </IconButton>
+                          <Tooltip title="Undo" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleUndoTask(task.id)}
+                              size="small"
+                            >
+                              <ClearIcon />
+                            </IconButton>
+                          </Tooltip>
                         ) : (
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleCompleteTask(task.id)}
-                          >
-                            <CheckIcon />
-                          </IconButton>
+                          <Tooltip title="Mark as Completed" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleCompleteTask(task.id)}
+                              size="small"
+                            >
+                              <CheckCircleIcon />
+                            </IconButton>
+                          </Tooltip>
                         )}
                       </ListItemSecondaryAction>
                     </ListItem>
                   ))}
               </List>
               {completedTasks.length > tasksPerPage && (
-                <div>
+                <Box mt={2}>
                   <IconButton
-                    onClick={() =>
-                      setCompletedTasksPage(completedTasksPage - 1)
-                    }
+                    onClick={() => setCompletedTasksPage(completedTasksPage - 1)}
                     disabled={completedTasksPage === 1}
+                    size="small"
                   >
                     <NavigateBeforeIcon />
                   </IconButton>
                   <IconButton
-                    onClick={() =>
-                      setCompletedTasksPage(completedTasksPage + 1)
-                    }
+                    onClick={() => setCompletedTasksPage(completedTasksPage + 1)}
                     disabled={
                       completedTasksPage * tasksPerPage >= completedTasks.length
                     }
+                    size="small"
                   >
                     <NavigateNextIcon />
                   </IconButton>
-                </div>
+                </Box>
               )}
             </>
           )}

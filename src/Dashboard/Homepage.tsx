@@ -8,14 +8,21 @@ import {
   Box,
   Paper,
   Grid,
+  Tooltip,
+  Fab,
 } from "@mui/material";
-
 import CategoryList from "./Category/CategoryList";
 import TasksList from "./Task/TasksList";
 import CreateTask from "./Task/CreateTask";
 import TodayTaskList from "./TodayTask/TodayTaskList";
+import { Add as AddIcon } from "@mui/icons-material";
 
-const Homepage: React.FC = () => {
+interface HomepageProps {
+  handleLogout: () => void; // Add handleLogout prop
+}
+
+
+const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
   const [showCategoryList, setShowCategoryList] = useState(false);
   const [showTasksList, setShowTasksList] = useState(false);
   const [showNewTask, setShowNewTask] = useState(false);
@@ -58,6 +65,11 @@ const Homepage: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleLogoutClick = () => {
+    handleLogout();
+  };
+
 
   return (
     <>
@@ -126,6 +138,39 @@ const Homepage: React.FC = () => {
           </Paper>
         )}
       </Container>
+
+      {/* Add a floating "Create Task" button */}
+      {!showCategoryList && !showTasksList && !showNewTask && (
+        <Tooltip title="Create New Task" placement="left">
+          <Fab
+            color="primary"
+            aria-label="add"
+            sx={{
+              position: "fixed",
+              bottom: 16,
+              right: 16,
+              zIndex: 10,
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+              "&:hover": {
+                boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.1)",
+              },
+            }}
+            onClick={handleShowNewTask}
+          >
+            <AddIcon />
+          </Fab>
+        </Tooltip>
+      )}
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={handleLogoutClick}
+        sx={{
+          mt: 2,
+        }}
+      >
+        Logout
+      </Button>
     </>
   );
 };
