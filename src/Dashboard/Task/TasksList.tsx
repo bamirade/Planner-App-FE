@@ -18,6 +18,7 @@ import {
   MenuItem,
   InputLabel,
   TextField,
+  Snackbar,
 } from "@mui/material";
 import {
   NavigateBefore as NavigateBeforeIcon,
@@ -44,6 +45,10 @@ const TasksList: React.FC<TasksListProps> = ({ onBack, handleShowNewTask }) => {
   const itemsPerPage = 13;
   const [loading, setLoading] = useState(false);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const [deleteSnackbarOpen, setDeleteSnackbarOpen] = useState(false);
+  const [deleteSnackbarMessage, setDeleteSnackbarMessage] = useState("");
+  const [editSnackbarOpen, setEditSnackbarOpen] = useState(false);
+  const [editSnackbarMessage, setEditSnackbarMessage] = useState("");
 
   useEffect(() => {
     fetchCategories();
@@ -100,6 +105,8 @@ const TasksList: React.FC<TasksListProps> = ({ onBack, handleShowNewTask }) => {
       setDeletingTask(null);
       await deleteTask(taskId);
       setTasks(tasks.filter((task) => task.id !== taskId));
+      setDeleteSnackbarMessage("Task deleted successfully.");
+      setDeleteSnackbarOpen(true);
     } catch (error) {
       console.error("Error deleting task:", error);
     }
@@ -118,6 +125,8 @@ const TasksList: React.FC<TasksListProps> = ({ onBack, handleShowNewTask }) => {
       await updateTask(taskId, updatedData);
       setShowEditModal(false);
       fetchTasks();
+      setEditSnackbarMessage("Task updated successfully.");
+      setEditSnackbarOpen(true);
     } catch (error) {
       console.error("Error updating task:", error);
     }
@@ -278,6 +287,20 @@ const TasksList: React.FC<TasksListProps> = ({ onBack, handleShowNewTask }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={deleteSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setDeleteSnackbarOpen(false)}
+        message={deleteSnackbarMessage}
+      />
+
+      <Snackbar
+        open={editSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setEditSnackbarOpen(false)}
+        message={editSnackbarMessage}
+      />
     </Box>
   );
 };
