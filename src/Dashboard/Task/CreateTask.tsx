@@ -10,10 +10,12 @@ import {
   InputLabel,
   Grid,
   Typography,
+  Snackbar,
 } from "@mui/material";
 
 interface CreateTaskProps {
   onBack: () => void;
+  onTaskCreate: () => void;
 }
 
 const getTimeFromDate = (dateTime: string) => {
@@ -22,7 +24,7 @@ const getTimeFromDate = (dateTime: string) => {
   return dateObj.toISOString().slice(11, 16);
 };
 
-const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
+const CreateTask: React.FC<CreateTaskProps> = ({ onBack, onTaskCreate  }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<string>(
@@ -32,6 +34,9 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [dueTime, setDueTime] = useState(getTimeFromDate(new Date().toISOString()));
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -80,11 +85,15 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
     const createdTask = await createTask(taskData);
     console.log("Created task:", createdTask);
 
+    setSnackbarMessage("Task created successfully!");
+    setSnackbarOpen(true);
+
     setName("");
     setDescription("");
-    setDueDate("");
+    setDueDate(new Date().toISOString().split("T")[0]);
     setCategory("");
     onBack();
+    onTaskCreate ();
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<{ value: unknown }>) => {
@@ -103,6 +112,9 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDueTime(e.target.value);
   };
+
+  const isDisabled =
+    name.trim() === "" || category === "" || (isAddingCategory && category.toString().trim() === "");
 
   return (
     <Grid container spacing={3}>
@@ -126,7 +138,7 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
                 onChange={handleCategoryChange}
                 fullWidth
               />
-              <Button onClick={handleCancelAddCategory}>-</Button>
+              <Button onClick={handleCancelAddCategory}>Show Categories</Button>
             </div>
           ) : (
             <div>
@@ -179,11 +191,17 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack }) => {
         />
       </Grid>
       <Grid item xs={12}>
-        <Button variant="contained" onClick={handleCreateTask}>
+        <Button variant="contained" onClick={handleCreateTask} disabled={isDisabled}>
           Create Task
         </Button>
         <Button onClick={onBack}>Back</Button>
       </Grid>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
     </Grid>
   );
 };

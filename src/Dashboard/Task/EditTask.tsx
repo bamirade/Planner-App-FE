@@ -137,7 +137,7 @@ const EditTask: React.FC<EditTaskProps> = ({
                 onChange={handleCategoryChange}
                 fullWidth
               />
-              <Button onClick={handleCancelAddCategory}>-</Button>
+              <Button onClick={handleCancelAddCategory}>Show Categories</Button>
             </div>
           ) : (
             <div>

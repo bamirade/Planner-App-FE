@@ -10,6 +10,7 @@ import {
   Grid,
   Tooltip,
   Fab,
+  Snackbar,
 } from "@mui/material";
 import CategoryList from "./Category/CategoryList";
 import TasksList from "./Task/TasksList";
@@ -27,6 +28,8 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
   const [showNewTask, setShowNewTask] = useState(false);
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentTime, setCurrentTime] = useState<string>("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const handleShowCategoryList = () => {
     setShowCategoryList(true);
@@ -67,6 +70,11 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
 
   const handleLogoutClick = () => {
     handleLogout();
+  };
+
+  const handleTaskCreate = () => {
+    setSnackbarMessage("Task created successfully!");
+    setSnackbarOpen(true);
   };
 
   return (
@@ -137,7 +145,7 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
         )}
         {showNewTask && (
           <Paper sx={{ p: 2, mt: 2 }}>
-            <CreateTask onBack={handleBack} />
+            <CreateTask onBack={handleBack} onTaskCreate={handleTaskCreate}/>
           </Paper>
         )}
       </Container>
@@ -164,6 +172,12 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
           </Fab>
         </Tooltip>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
     </>
   );
 };
