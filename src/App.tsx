@@ -46,7 +46,6 @@ function App() {
   return (
     <ThemeProvider theme={theme(mode)}>
       <CssBaseline />
-      <div className="app-container">
         {loggedInUser ? (
           <Homepage handleLogout={handleLogout} />
         ) : (
@@ -77,7 +76,6 @@ function App() {
             </Fab>
           </Tooltip>
         </div>
-      </div>
     </ThemeProvider>
   );
 }

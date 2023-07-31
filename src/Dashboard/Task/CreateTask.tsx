@@ -191,7 +191,7 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onBack, onTaskCreate  }) => {
         />
       </Grid>
       <Grid item xs={12}>
-        <Button variant="contained" onClick={handleCreateTask} disabled={isDisabled}>
+        <Button variant="contained" onClick={handleCreateTask} disabled={isDisabled} style={{ marginRight: "8px" }}>
           Create Task
         </Button>
         <Button onClick={onBack}>Back</Button>

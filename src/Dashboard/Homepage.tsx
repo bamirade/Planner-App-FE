@@ -78,7 +78,7 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
   };
 
   return (
-    <>
+    <div className="app-container">
       <AppBar position="static">
         <Toolbar>
           <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -178,7 +178,7 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
         onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
       />
-    </>
+    </div>
   );
 };
 
