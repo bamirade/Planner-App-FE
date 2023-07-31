@@ -1,7 +1,11 @@
-import axios, { AxiosError } from "axios";
-import key from './key'
+import axios, { AxiosError } from 'axios';
+import key from './key';
 
 const API_URL = key.API_URL;
+
+const getToken = () => {
+  return localStorage.getItem('token') as string;
+};
 
 export interface Task {
   id: number;
@@ -24,7 +28,9 @@ export const getTasks = async (categoryId?: number): Promise<Task[]> => {
     const url = categoryId
       ? `${API_URL}/categories/${categoryId}/tasks`
       : `${API_URL}/tasks`;
-    const response = await axios.get<Task[]>(url);
+    const response = await axios.get<Task[]>(url, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -34,7 +40,9 @@ export const getTasks = async (categoryId?: number): Promise<Task[]> => {
 
 export const getTask = async (taskId: number): Promise<Task> => {
   try {
-    const response = await axios.get<Task>(`${API_URL}/tasks/${taskId}`);
+    const response = await axios.get<Task>(`${API_URL}/tasks/${taskId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -44,7 +52,9 @@ export const getTask = async (taskId: number): Promise<Task> => {
 
 export const createTask = async (taskData: Partial<Task>): Promise<Task> => {
   try {
-    const response = await axios.post<Task>(`${API_URL}/tasks`, taskData);
+    const response = await axios.post<Task>(`${API_URL}/tasks`, taskData, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
     return response.data;
   } catch (error) {
     handleApiError(error);
@@ -59,7 +69,10 @@ export const updateTask = async (
   try {
     const response = await axios.patch<Task>(
       `${API_URL}/tasks/${taskId}`,
-      taskData
+      taskData,
+      {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      }
     );
     return response.data;
   } catch (error) {
@@ -70,9 +83,29 @@ export const updateTask = async (
 
 export const deleteTask = async (taskId: number): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/tasks/${taskId}`);
+    await axios.delete(`${API_URL}/tasks/${taskId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
   } catch (error) {
     handleApiError(error);
+  }
+};
+
+export const markTaskAsCompleted = async (taskId: number): Promise<Task> => {
+  try {
+    const response = await axios.patch<Task>(
+      `${API_URL}/tasks/${taskId}`,
+      {
+        is_completed: true,
+      },
+      {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    handleApiError(error);
+    return {} as Task;
   }
 };
 
@@ -86,18 +119,6 @@ const handleApiError = (error: unknown): never => {
       throw new Error(data.message);
     }
   } else {
-    throw new Error("Network Error");
-  }
-};
-
-export const markTaskAsCompleted = async (taskId: number): Promise<Task> => {
-  try {
-    const response = await axios.patch<Task>(`${API_URL}/tasks/${taskId}`, {
-      is_completed: true,
-    });
-    return response.data;
-  } catch (error) {
-    handleApiError(error);
-    return {} as Task;
+    throw new Error('Network Error');
   }
 };

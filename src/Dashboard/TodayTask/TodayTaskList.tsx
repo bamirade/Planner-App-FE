@@ -1,8 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { Task, getTasks, markTaskAsCompleted, updateTask } from "../../api/task";
+import {
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+  Tooltip,
+} from "@mui/material";
+import {
+  Task,
+  getTasks,
+  markTaskAsCompleted,
+  updateTask,
+} from "../../api/task";
+import {
+  CheckCircle as CheckCircleIcon,
+  Clear as ClearIcon,
+  Warning as WarningIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon,
+} from "@mui/icons-material";
 
 const TodayTaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [currentTasksPage, setCurrentTasksPage] = useState(1);
+  const [incompleteTasksPage, setIncompleteTasksPage] = useState(1);
+  const [completedTasksPage, setCompletedTasksPage] = useState(1);
+  const [expandedSection, setExpandedSection] = useState<
+    "current" | "incomplete" | "complete"
+  >("current");
+  const tasksPerPage = 5;
 
   useEffect(() => {
     fetchTasks();
@@ -17,9 +49,27 @@ const TodayTaskList: React.FC = () => {
     }
   };
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date(
+    new Date().getTime() - new Date().getTimezoneOffset() * 60000
+  ).toISOString();
 
-  const todayTasks = tasks.filter((task) => task.due_date === today);
+  const todayTasks = tasks
+    .filter((task) => task.due_date.split("T")[0] === today.split("T")[0])
+    .sort((taskA, taskB) => {
+      const dateA = new Date(taskA.due_date);
+      const dateB = new Date(taskB.due_date);
+      return dateA - dateB;
+    });
+
+  const currentTasks = todayTasks.filter(
+    (task) => !task.is_completed && task.due_date >= today
+  );
+
+  const incompleteTasks = todayTasks.filter(
+    (task) => !task.is_completed && task.due_date <= today
+  );
+
+  const completedTasks = todayTasks.filter((task) => task.is_completed);
 
   const handleCompleteTask = async (taskId: number) => {
     try {
@@ -45,30 +95,329 @@ const TodayTaskList: React.FC = () => {
     }
   };
 
+  const renderTaskTime = (dueDate: string) => {
+    if (!dueDate) {
+      return "No time entered";
+    }
+
+    const dateObj = new Date(dueDate);
+
+    const hours = dateObj.getUTCHours();
+    const minutes = dateObj.getUTCMinutes();
+
+    const time = `${
+      hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
+    }:${minutes.toString().padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
+
+    return time;
+  };
+
+  const handleChangeSection = (
+    section: "current" | "incomplete" | "complete"
+  ) => {
+    setExpandedSection(section);
+  };
+
   return (
-    <div>
-      <h2>Today's Tasks</h2>
-      {todayTasks.length === 0 ? (
-        <p>No tasks for today.</p>
-      ) : (
-        <ul>
-          {todayTasks.map((task) => (
-            <li key={task.id}>
-              {task.name}
-              {task.is_completed ? (
-                <button onClick={() => handleUndoTask(task.id)}>
-                  Undo
-                </button>
-              ) : (
-                <button onClick={() => handleCompleteTask(task.id)}>
-                  Complete
-                </button>
+    <>
+      <Typography variant="h5" sx={{ marginBottom: 2 }}>
+        Today's Tasks
+      </Typography>
+      <Accordion
+        expanded={expandedSection === "current"}
+        onChange={() => handleChangeSection("current")}
+      >
+        <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
+          Current
+        </AccordionSummary>
+        <AccordionDetails
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "52vh",
+          }}
+        >
+          {currentTasks.length === 0 ? (
+            <Typography variant="body1">No tasks for today.</Typography>
+          ) : (
+            <List style={{ flex: "1 1 auto" }}>
+              {currentTasks
+                .slice(
+                  (currentTasksPage - 1) * tasksPerPage,
+                  currentTasksPage * tasksPerPage
+                )
+                .map((task) => (
+                  <Tooltip
+                    key={task.id}
+                    title={task.description}
+                    placement="top"
+                  >
+                    <ListItem key={task.id} disableGutters>
+                      <ListItemText
+                        primary={task.name}
+                        secondary={renderTaskTime(task.due_date)}
+                        primaryTypographyProps={{
+                          style: {
+                            color: task.is_completed ? "green" : "inherit",
+                            textDecoration: task.is_completed
+                              ? "line-through"
+                              : "none",
+                          },
+                        }}
+                      />
+                      <ListItemSecondaryAction>
+                        {task.is_completed ? (
+                          <Tooltip title="Undo" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleUndoTask(task.id)}
+                              size="small"
+                            >
+                              <ClearIcon />
+                            </IconButton>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title="Mark as Completed" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleCompleteTask(task.id)}
+                              size="small"
+                            >
+                              <CheckCircleIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  </Tooltip>
+                ))}
+            </List>
+          )}
+
+          {currentTasks.length > tasksPerPage && (
+            <Box mt={2} style={{ alignSelf: "flex-end" }}>
+              <IconButton
+                onClick={() => setCurrentTasksPage(currentTasksPage - 1)}
+                disabled={currentTasksPage === 1}
+                size="small"
+              >
+                <NavigateBeforeIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => setCurrentTasksPage(currentTasksPage + 1)}
+                disabled={
+                  currentTasksPage * tasksPerPage >= currentTasks.length
+                }
+                size="small"
+              >
+                <NavigateNextIcon />
+              </IconButton>
+            </Box>
+          )}
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion
+        expanded={expandedSection === "incomplete"}
+        onChange={() => handleChangeSection("incomplete")}
+      >
+        <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
+          Passed Due
+        </AccordionSummary>
+        <AccordionDetails
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "52vh",
+          }}
+        >
+          {incompleteTasks.length === 0 ? (
+            <Typography variant="body1">
+              No passed due tasks for today.
+            </Typography>
+          ) : (
+            <>
+              <List>
+                {incompleteTasks
+                  .slice(
+                    (incompleteTasksPage - 1) * tasksPerPage,
+                    incompleteTasksPage * tasksPerPage
+                  )
+                  .map((task) => (
+                    <Tooltip
+                      key={task.id}
+                      title={task.description}
+                      placement="top"
+                    >
+                      <ListItem disableGutters>
+                        <ListItemText
+                          primary={task.name}
+                          secondary={renderTaskTime(task.due_date)}
+                          primaryTypographyProps={{
+                            style: {
+                              color: "red",
+                            },
+                          }}
+                        />
+                        <Typography color="error" variant="inherit">
+                          <WarningIcon fontSize="small" />
+                        </Typography>
+                        <ListItemSecondaryAction>
+                          {task.is_completed ? (
+                            <Tooltip title="Undo" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleUndoTask(task.id)}
+                                size="small"
+                              >
+                                <ClearIcon />
+                              </IconButton>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip title="Mark as Completed" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleCompleteTask(task.id)}
+                                size="small"
+                              >
+                                <CheckCircleIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    </Tooltip>
+                  ))}
+              </List>
+              {incompleteTasks.length > tasksPerPage && (
+                <Box mt={2} style={{ alignSelf: "flex-end" }}>
+                  <IconButton
+                    onClick={() =>
+                      setIncompleteTasksPage(incompleteTasksPage - 1)
+                    }
+                    disabled={incompleteTasksPage === 1}
+                    size="small"
+                  >
+                    <NavigateBeforeIcon />
+                  </IconButton>
+                  <IconButton
+                    onClick={() =>
+                      setIncompleteTasksPage(incompleteTasksPage + 1)
+                    }
+                    disabled={
+                      incompleteTasksPage * tasksPerPage >=
+                      incompleteTasks.length
+                    }
+                    size="small"
+                  >
+                    <NavigateNextIcon />
+                  </IconButton>
+                </Box>
               )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+            </>
+          )}
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion
+        expanded={expandedSection === "complete"}
+        onChange={() => handleChangeSection("complete")}
+      >
+        <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
+          Complete
+        </AccordionSummary>
+        <AccordionDetails
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "52vh",
+          }}
+        >
+          {completedTasks.length === 0 ? (
+            <Typography variant="body1">
+              No completed tasks for today.
+            </Typography>
+          ) : (
+            <>
+              <List>
+                {completedTasks
+                  .slice(
+                    (completedTasksPage - 1) * tasksPerPage,
+                    completedTasksPage * tasksPerPage
+                  )
+                  .map((task) => (
+                    <Tooltip
+                      key={task.id}
+                      title={task.description}
+                      placement="top"
+                    >
+                      <ListItem disableGutters>
+                        <ListItemText
+                          primary={task.name}
+                          secondary={renderTaskTime(task.due_date)}
+                          primaryTypographyProps={{
+                            style: {
+                              color: "green",
+                              textDecoration: "line-through",
+                            },
+                          }}
+                        />
+                        <ListItemSecondaryAction>
+                          {task.is_completed ? (
+                            <Tooltip title="Undo" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleUndoTask(task.id)}
+                                size="small"
+                              >
+                                <ClearIcon />
+                              </IconButton>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip title="Mark as Completed" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleCompleteTask(task.id)}
+                                size="small"
+                              >
+                                <CheckCircleIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    </Tooltip>
+                  ))}
+              </List>
+              {completedTasks.length > tasksPerPage && (
+                <Box mt={2} style={{ alignSelf: "flex-end" }}>
+                  <IconButton
+                    onClick={() =>
+                      setCompletedTasksPage(completedTasksPage - 1)
+                    }
+                    disabled={completedTasksPage === 1}
+                    size="small"
+                  >
+                    <NavigateBeforeIcon />
+                  </IconButton>
+                  <IconButton
+                    onClick={() =>
+                      setCompletedTasksPage(completedTasksPage + 1)
+                    }
+                    disabled={
+                      completedTasksPage * tasksPerPage >= completedTasks.length
+                    }
+                    size="small"
+                  >
+                    <NavigateNextIcon />
+                  </IconButton>
+                </Box>
+              )}
+            </>
+          )}
+        </AccordionDetails>
+      </Accordion>
+    </>
   );
 };
 
