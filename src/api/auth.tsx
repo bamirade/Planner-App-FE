@@ -1,110 +1,116 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import key from './key';
 
-const BASE_URL = key.API_URL;
+const API_URL = key.API_URL;
 
-interface AuthResponse {
-  token: string;
+const getToken = () => {
+  return localStorage.getItem('token') as string;
+};
+
+export interface User {
+  id: number;
+  email: string;
+  password: string;
+  password_confirmation: string;
 }
 
-export const signUp = async (email: string, password: string, password_confirmation: string): Promise<AuthResponse | null> => {
+export interface ErrorResponse {
+  error: string;
+}
+
+export const registerUser = async (userData: Partial<User>): Promise<string | null> => {
   try {
-    const response = await axios.post<AuthResponse>(`${BASE_URL}/signup`, {
-      user: { email, password, password_confirmation },
-    });
-    localStorage.setItem('token', response.data.token);
+    const user = { user: userData }
+    const response = await axios.post<string>(`${API_URL}/signup`, user);
     return response.data;
   } catch (error) {
-    console.error('Error during sign up:', error);
+    handleApiError(error);
     return null;
   }
 };
 
-export const login = async (email: string, password: string): Promise<AuthResponse | null> => {
+export const loginUser = async (userCredentials: Partial<User>): Promise<string | null> => {
   try {
-    const response = await axios.post<AuthResponse>(`${BASE_URL}/login`, {
-      user: { email, password },
-    });
-    localStorage.setItem('token', response.data.token);
+    const user = { user: userCredentials };
+    const response = await axios.post<string>(`${API_URL}/login`, user);
     return response.data;
   } catch (error) {
-    console.error('Error during login:', error);
+    handleApiError(error);
     return null;
   }
 };
 
-export const updateUser = async (userId: number, userData: any): Promise<any> => {
+export const getLoggedInUser = async (): Promise<User | null> => {
   try {
-    const token = getToken();
-    if (!token) {
-      throw new Error('User is not authenticated.');
-    }
-
-    const response = await axios.patch<any>(`${BASE_URL}/users/${userId}`, userData, {
-      headers: { Authorization: `Bearer ${token}` },
+    const response = await axios.get<User>(`${API_URL}/users/show`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
     });
-
     return response.data;
   } catch (error) {
-    console.error('Error updating user:', error);
-    throw error;
+    handleApiError(error);
+    return null;
   }
 };
 
-export const deleteUser = async (userId: number): Promise<void> => {
+export const updateUser = async (userData: Partial<User>): Promise<User | null> => {
   try {
-    const token = getToken();
-    if (!token) {
-      throw new Error('User is not authenticated.');
-    }
-
-    await axios.delete(`${BASE_URL}/users/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+    const response = await axios.patch<User>(`${API_URL}/users/update`, userData, {
+      headers: { Authorization: `Bearer ${getToken()}` },
     });
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    throw error;
-  }
-};
-
-export const updatePassword = async (userId: number, passwordData: any): Promise<void> => {
-  try {
-    const token = getToken();
-    if (!token) {
-      throw new Error('User is not authenticated.');
-    }
-
-    await axios.patch(`${BASE_URL}/users/${userId}/update_password`, passwordData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  } catch (error) {
-    console.error('Error updating password:', error);
-    throw error;
-  }
-};
-
-export const getCurrentUser = async (): Promise<any> => {
-  try {
-    const token = getToken();
-    if (!token) {
-      throw new Error('User is not authenticated.');
-    }
-
-    const response = await axios.get<any>(`${BASE_URL}/users/current`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
     return response.data;
   } catch (error) {
-    console.error('Error fetching current user:', error);
-    throw error;
+    handleApiError(error);
+    return null;
   }
 };
 
-export function getToken(): string | null {
-  return localStorage.getItem('token');
-}
+export const updatePassword = async (passwordData: {
+  password: string;
+  password_confirmation: string;
+}): Promise<string | null> => {
+  try {
+    const response = await axios.patch<string>(`${API_URL}/users/update_password`, passwordData, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    return response.data;
+  } catch (error) {
+    handleApiError(error);
+    return null;
+  }
+};
 
-export function logout(): void {
-  localStorage.removeItem('token');
-}
+export const deleteUser = async (): Promise<void> => {
+  try {
+    await axios.delete(`${API_URL}/users/destroy`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const updateEmail = async (newEmail: string): Promise<User | null> => {
+  try {
+    const response = await axios.patch<User>(
+      `${API_URL}/users/update_email`,
+      { email: newEmail },
+      {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    handleApiError(error);
+    return null;
+  }
+};
+
+const handleApiError = (error: unknown): never => {
+  const axiosError = error as AxiosError<ErrorResponse> | undefined;
+  if (axiosError && axiosError.response) {
+    const { data } = axiosError.response;
+    throw new Error(data.error);
+  } else {
+    throw new Error('Network Error');
+  }
+};

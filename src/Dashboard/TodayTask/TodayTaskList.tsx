@@ -119,7 +119,7 @@ const TodayTaskList: React.FC = () => {
   };
 
   return (
-    <div>
+    <>
       <Typography variant="h5" sx={{ marginBottom: 2 }}>
         Today's Tasks
       </Typography>
@@ -130,60 +130,72 @@ const TodayTaskList: React.FC = () => {
         <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
           Current
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "52vh",
+          }}
+        >
           {currentTasks.length === 0 ? (
             <Typography variant="body1">No tasks for today.</Typography>
           ) : (
-            <List>
+            <List style={{ flex: "1 1 auto" }}>
               {currentTasks
                 .slice(
                   (currentTasksPage - 1) * tasksPerPage,
                   currentTasksPage * tasksPerPage
                 )
                 .map((task) => (
-                  <ListItem key={task.id} disableGutters>
-                    <ListItemText
-                      primary={task.name}
-                      secondary={renderTaskTime(task.due_date)}
-                      primaryTypographyProps={{
-                        style: {
-                          color: task.is_completed ? "green" : "inherit",
-                          textDecoration: task.is_completed
-                            ? "line-through"
-                            : "none",
-                        },
-                      }}
-                    />
-                    <ListItemSecondaryAction>
-                      {task.is_completed ? (
-                        <Tooltip title="Undo" placement="top">
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleUndoTask(task.id)}
-                            size="small"
-                          >
-                            <ClearIcon />
-                          </IconButton>
-                        </Tooltip>
-                      ) : (
-                        <Tooltip title="Mark as Completed" placement="top">
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleCompleteTask(task.id)}
-                            size="small"
-                          >
-                            <CheckCircleIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </ListItemSecondaryAction>
-                  </ListItem>
+                  <Tooltip
+                    key={task.id}
+                    title={task.description}
+                    placement="top"
+                  >
+                    <ListItem key={task.id} disableGutters>
+                      <ListItemText
+                        primary={task.name}
+                        secondary={renderTaskTime(task.due_date)}
+                        primaryTypographyProps={{
+                          style: {
+                            color: task.is_completed ? "green" : "inherit",
+                            textDecoration: task.is_completed
+                              ? "line-through"
+                              : "none",
+                          },
+                        }}
+                      />
+                      <ListItemSecondaryAction>
+                        {task.is_completed ? (
+                          <Tooltip title="Undo" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleUndoTask(task.id)}
+                              size="small"
+                            >
+                              <ClearIcon />
+                            </IconButton>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title="Mark as Completed" placement="top">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleCompleteTask(task.id)}
+                              size="small"
+                            >
+                              <CheckCircleIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  </Tooltip>
                 ))}
             </List>
           )}
 
           {currentTasks.length > tasksPerPage && (
-            <Box mt={2}>
+            <Box mt={2} style={{ alignSelf: "flex-end" }}>
               <IconButton
                 onClick={() => setCurrentTasksPage(currentTasksPage - 1)}
                 disabled={currentTasksPage === 1}
@@ -210,12 +222,18 @@ const TodayTaskList: React.FC = () => {
         onChange={() => handleChangeSection("incomplete")}
       >
         <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
-          Passed Due date
+          Passed Due
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "52vh",
+          }}
+        >
           {incompleteTasks.length === 0 ? (
             <Typography variant="body1">
-              No passed due date tasks for today.
+              No passed due tasks for today.
             </Typography>
           ) : (
             <>
@@ -226,58 +244,69 @@ const TodayTaskList: React.FC = () => {
                     incompleteTasksPage * tasksPerPage
                   )
                   .map((task) => (
-                    <ListItem key={task.id} disableGutters>
-                      <ListItemText
-                        primary={task.name}
-                        secondary={renderTaskTime(task.due_date)}
-                        primaryTypographyProps={{
-                          style: {
-                            color: "red",
-                          },
-                        }}
-                      />
-                      <Typography color="error" variant="inherit">
-                        <WarningIcon fontSize="small" />
-                      </Typography>
-                      <ListItemSecondaryAction>
-                        {task.is_completed ? (
-                          <Tooltip title="Undo" placement="top">
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleUndoTask(task.id)}
-                              size="small"
-                            >
-                              <ClearIcon />
-                            </IconButton>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip title="Mark as Completed" placement="top">
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleCompleteTask(task.id)}
-                              size="small"
-                            >
-                              <CheckCircleIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                    <Tooltip
+                      key={task.id}
+                      title={task.description}
+                      placement="top"
+                    >
+                      <ListItem disableGutters>
+                        <ListItemText
+                          primary={task.name}
+                          secondary={renderTaskTime(task.due_date)}
+                          primaryTypographyProps={{
+                            style: {
+                              color: "red",
+                            },
+                          }}
+                        />
+                        <Typography color="error" variant="inherit">
+                          <WarningIcon fontSize="small" />
+                        </Typography>
+                        <ListItemSecondaryAction>
+                          {task.is_completed ? (
+                            <Tooltip title="Undo" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleUndoTask(task.id)}
+                                size="small"
+                              >
+                                <ClearIcon />
+                              </IconButton>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip title="Mark as Completed" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleCompleteTask(task.id)}
+                                size="small"
+                              >
+                                <CheckCircleIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    </Tooltip>
                   ))}
               </List>
               {incompleteTasks.length > tasksPerPage && (
-                <Box mt={2}>
+                <Box mt={2} style={{ alignSelf: "flex-end" }}>
                   <IconButton
-                    onClick={() => setIncompleteTasksPage(incompleteTasksPage - 1)}
+                    onClick={() =>
+                      setIncompleteTasksPage(incompleteTasksPage - 1)
+                    }
                     disabled={incompleteTasksPage === 1}
                     size="small"
                   >
                     <NavigateBeforeIcon />
                   </IconButton>
                   <IconButton
-                    onClick={() => setIncompleteTasksPage(incompleteTasksPage + 1)}
+                    onClick={() =>
+                      setIncompleteTasksPage(incompleteTasksPage + 1)
+                    }
                     disabled={
-                      incompleteTasksPage * tasksPerPage >= incompleteTasks.length
+                      incompleteTasksPage * tasksPerPage >=
+                      incompleteTasks.length
                     }
                     size="small"
                   >
@@ -297,7 +326,13 @@ const TodayTaskList: React.FC = () => {
         <AccordionSummary expandIcon={<NavigateBeforeIcon />}>
           Complete
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "52vh",
+          }}
+        >
           {completedTasks.length === 0 ? (
             <Typography variant="body1">
               No completed tasks for today.
@@ -311,54 +346,64 @@ const TodayTaskList: React.FC = () => {
                     completedTasksPage * tasksPerPage
                   )
                   .map((task) => (
-                    <ListItem key={task.id} disableGutters>
-                      <ListItemText
-                        primary={task.name}
-                        secondary={renderTaskTime(task.due_date)}
-                        primaryTypographyProps={{
-                          style: {
-                            color: "green",
-                            textDecoration: "line-through",
-                          },
-                        }}
-                      />
-                      <ListItemSecondaryAction>
-                        {task.is_completed ? (
-                          <Tooltip title="Undo" placement="top">
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleUndoTask(task.id)}
-                              size="small"
-                            >
-                              <ClearIcon />
-                            </IconButton>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip title="Mark as Completed" placement="top">
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleCompleteTask(task.id)}
-                              size="small"
-                            >
-                              <CheckCircleIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </ListItemSecondaryAction>
-                    </ListItem>
+                    <Tooltip
+                      key={task.id}
+                      title={task.description}
+                      placement="top"
+                    >
+                      <ListItem disableGutters>
+                        <ListItemText
+                          primary={task.name}
+                          secondary={renderTaskTime(task.due_date)}
+                          primaryTypographyProps={{
+                            style: {
+                              color: "green",
+                              textDecoration: "line-through",
+                            },
+                          }}
+                        />
+                        <ListItemSecondaryAction>
+                          {task.is_completed ? (
+                            <Tooltip title="Undo" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleUndoTask(task.id)}
+                                size="small"
+                              >
+                                <ClearIcon />
+                              </IconButton>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip title="Mark as Completed" placement="top">
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleCompleteTask(task.id)}
+                                size="small"
+                              >
+                                <CheckCircleIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    </Tooltip>
                   ))}
               </List>
               {completedTasks.length > tasksPerPage && (
-                <Box mt={2}>
+                <Box mt={2} style={{ alignSelf: "flex-end" }}>
                   <IconButton
-                    onClick={() => setCompletedTasksPage(completedTasksPage - 1)}
+                    onClick={() =>
+                      setCompletedTasksPage(completedTasksPage - 1)
+                    }
                     disabled={completedTasksPage === 1}
                     size="small"
                   >
                     <NavigateBeforeIcon />
                   </IconButton>
                   <IconButton
-                    onClick={() => setCompletedTasksPage(completedTasksPage + 1)}
+                    onClick={() =>
+                      setCompletedTasksPage(completedTasksPage + 1)
+                    }
                     disabled={
                       completedTasksPage * tasksPerPage >= completedTasks.length
                     }
@@ -372,7 +417,7 @@ const TodayTaskList: React.FC = () => {
           )}
         </AccordionDetails>
       </Accordion>
-    </div>
+    </>
   );
 };
 

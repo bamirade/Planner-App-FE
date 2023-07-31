@@ -18,9 +18,8 @@ import TodayTaskList from "./TodayTask/TodayTaskList";
 import { Add as AddIcon } from "@mui/icons-material";
 
 interface HomepageProps {
-  handleLogout: () => void; // Add handleLogout prop
+  handleLogout: () => void;
 }
-
 
 const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
   const [showCategoryList, setShowCategoryList] = useState(false);
@@ -70,7 +69,6 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
     handleLogout();
   };
 
-
   return (
     <>
       <AppBar position="static">
@@ -80,18 +78,23 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
             <Typography variant="subtitle2">{currentTime}</Typography>
           </Box>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Your Journal/Planner App
+            Whimsical Workflow
           </Typography>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleLogoutClick}
+            sx={{
+              mt: 2,
+            }}
+          >
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
       <Container sx={{ paddingTop: 4 }}>
         {!showCategoryList && !showTasksList && !showNewTask && (
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="h4">
-                Welcome to Your Journal/Planner App
-              </Typography>
-            </Grid>
             <Grid item xs={12}>
               <TodayTaskList />
             </Grid>
@@ -161,16 +164,6 @@ const Homepage: React.FC<HomepageProps> = ({ handleLogout }) => {
           </Fab>
         </Tooltip>
       )}
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={handleLogoutClick}
-        sx={{
-          mt: 2,
-        }}
-      >
-        Logout
-      </Button>
     </>
   );
 };

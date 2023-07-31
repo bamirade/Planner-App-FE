@@ -10,43 +10,72 @@ import {
   Grid,
   Typography,
   InputAdornment,
-  IconButton
+  IconButton,
+  ThemeProvider,
 } from "@mui/material";
-import { ThemeProvider } from '@mui/material/styles';
-import BoltIcon from '@mui/icons-material/Bolt';
-import theme from '../Misc/Theme';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import TaskAlt from "@mui/icons-material/TaskAlt";
+import theme from "../Misc/Theme";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { registerUser } from "../api/auth";
 
-const SignUp = ({ handleSignUp, handleBack, errorMessage }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [usernameError, setUsernameError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+interface SignUpProps {
+  handleSignUp: (
+    email: string,
+    password: string,
+    passwordConfirmation: string
+  ) => void;
+  handleBack: () => void;
+  errorMessage: string | null;
+}
 
-  const handleSubmit = (event) => {
+const SignUp: React.FC<SignUpProps> = ({
+  handleSignUp,
+  handleBack,
+  errorMessage,
+}) => {
+  const [email, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [passwordConfirmation, setConfirmPassword] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
+  const [usernameError, setUsernameError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     let errors = false;
-    if (password !== confirmPassword || password.length === 0) {
+    if (password !== passwordConfirmation || password.length === 0) {
       setPasswordError("Passwords do not match");
       errors = true;
     }
-    if (!password.length ) {
+    if (!password.length) {
       setPasswordError("Password Invalid");
       errors = true;
     }
-    if (!username.length|| username.includes(" ")) {
-      setUsernameError(
-        "Username invalid"
-      );
+    if (!email.length || email.includes(" ")) {
+      setUsernameError("Email Invalid");
+      errors = true;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setUsernameError("Please enter a valid email address");
       errors = true;
     }
     if (!errors) {
-      handleSignUp(username, password);
+      try {
+        const response = await registerUser({
+          email,
+          password,
+          password_confirmation: passwordConfirmation,
+        });
+        localStorage.setItem("token", response.token);
+        handleSignUp(email, password, passwordConfirmation);
+      } catch (error) {
+        setUsernameError("Email invalid or taken");
+      }
     }
   };
+
 
   return (
     <ThemeProvider theme={theme}>
@@ -62,7 +91,7 @@ const SignUp = ({ handleSignUp, handleBack, errorMessage }) => {
           }}
         >
           <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-            <BoltIcon />
+            <TaskAlt />
           </Avatar>
           <Typography component="h1" variant="h5">
             Create an Account
@@ -72,21 +101,26 @@ const SignUp = ({ handleSignUp, handleBack, errorMessage }) => {
               {errorMessage}
             </Typography>
           )}
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 1 }}
+          >
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   id="username"
                   variant="outlined"
-                  label="Username"
+                  label="Email"
                   name="username"
                   autoComplete="username"
                   fullWidth
                   required
                   autoFocus
-                  value={username}
+                  value={email}
                   onChange={(e) => setUsername(e.target.value)}
-                  inputProps={{ 'aria-label': 'Enter your username' }}
+                  inputProps={{ "aria-label": "Enter your Email" }}
                   aria-labelledby="username-input"
                   error={!!usernameError}
                   helperText={usernameError}
@@ -99,7 +133,7 @@ const SignUp = ({ handleSignUp, handleBack, errorMessage }) => {
                   label="Password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   fullWidth
                   required
                   value={password}
@@ -116,7 +150,7 @@ const SignUp = ({ handleSignUp, handleBack, errorMessage }) => {
                       </InputAdornment>
                     ),
                   }}
-                  inputProps={{ 'aria-label': 'Enter your password' }}
+                  inputProps={{ "aria-label": "Enter your password" }}
                   aria-labelledby="password-input"
                 />
               </Grid>
@@ -129,7 +163,7 @@ const SignUp = ({ handleSignUp, handleBack, errorMessage }) => {
                   type={showPassword ? "text" : "password"}
                   fullWidth
                   required
-                  value={confirmPassword}
+                  value={passwordConfirmation}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   InputProps={{
                     endAdornment: (
@@ -143,7 +177,7 @@ const SignUp = ({ handleSignUp, handleBack, errorMessage }) => {
                       </InputAdornment>
                     ),
                   }}
-                  inputProps={{ 'aria-label': 'Confirm your password' }}
+                  inputProps={{ "aria-label": "Confirm your password" }}
                   aria-labelledby="confirm-password-input"
                   error={!!passwordError}
                   helperText={passwordError}
